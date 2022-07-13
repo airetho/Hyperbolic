@@ -16,6 +16,7 @@
 		
 		let xpos = 0.0;
 		let ypos = 0.0;
+		let rot = 0.0;
 		const SCALE = 200;
 		
 		let x1 = 0;
@@ -23,10 +24,12 @@
 		let x2 = 0;
 		let y2 = 0;
 		
-		function drawHLine(x1, y1, x2, y2) {
+		function drawHLine(x1, y1, x2, y2) {		
 			if(Math.abs(x1*y2 - x2*y1) < .0001 ) { //does the HLine go through the center
-				ctx.moveTo(x1, y1);
-				ctx.lineTo(x2, y2);
+				ctx.moveTo(x1*SCALE + canvas.width/2, y1*SCALE + canvas.height/2);
+				ctx.lineTo(x2*SCALE + canvas.width/2, y2*SCALE + canvas.height/2);
+				ctx.stroke();
+				return;
 			}
 			const r2 = x1*x1+y1*y1; //r^2, x1 from center
 			const x3 = x1/r2; //everting (x1,y1) about the poincare disk to get a 3rd point
@@ -40,10 +43,34 @@
 			const f = r2-x3*x3-y3*y3;
 			const centerx = (d*invDet*e - b*invDet*f)/2;
 			const centery = (a*invDet*f - c*invDet*e)/2;
-			const r = Math.sqrt((centerx-x1)*(centerx-x1)+(centery-y1)*(centery-y1));//radius of HLine on the disk
-			//var angle1 = 
+			const r = Math.sqrt((x1-centerx)*(x1-centerx)+(y1-centery)*(y1-centery));//radius of HLine on the disk
+			let angle1 = 0;
+			let angle2 = 0;
+			if(x1-centerx == 0) { //why am i doing this
+				angle1 = Math.PI*(1-Math.sign(y1-centery)/2); //either centerx-x1 or ce	ntery-y1 will be > 0
+			} else {
+				angle1 = Math.atan((y1-centery)/(x1-centerx));
+				if(x1-centerx < 0) {
+					angle1 += Math.PI;
+				} else if(y1-centerx < 0) {
+					angle1 += 2*Math.PI;
+				}
+			}
+			if(x2-centerx == 0) {
+				angle2 = Math.PI*(1-Math.sign(y2-centery)/2);
+			} else {
+				angle2 = Math.atan((y2-centery)/(x2-centerx));
+				if(x2-centerx < 0) {
+					angle2 += Math.PI;
+				}
+			}
+			let dir = false;
+			if((angle1 - angle2 > 0 && angle1 - angle2 < Math.PI) || angle1 - angle2 < -Math.PI) {
+			dir = true;
+			}
+			
 			ctx.beginPath();
-			ctx.arc(centerx*SCALE + canvas.width/2, centery*SCALE + canvas.height/2, SCALE*r, 0, 2*Math.PI);
+			ctx.arc(centerx*SCALE + canvas.width/2, centery*SCALE + canvas.height/2, SCALE*r, angle1, angle2, dir);
 			ctx.stroke();
 		}
 		
